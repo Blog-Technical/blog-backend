@@ -1,55 +1,15 @@
 version: "3"
 services:
-  postgres:
-    container_name: postgres
-    image: postgres:latest
-    ports:
-    - "5432:5432"
-    volumes:
-    - /data/postgres:/data/postgres
+  nestjs-api:
+    image: nestjs-api
     env_file:
-    - docker.env
-    networks:
-    - postgres
- 
-  pgadmin:
-    links:
-    - postgres:postgres
-    container_name: pgadmin
-    image: dpage/pgadmin4
+      - .env
     ports:
-    - "8080:80"
-    volumes:
-    - /data/pgadmin:/root/.pgadmin
-    env_file:
-    - docker.env
+      - "9000:9000"
     networks:
-    - postgres
-
-  es01:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.9
-    container_name: es01
-    environment:
-      - node.name=es01
-      - cluster.name=es-docker-cluster
-      - discovery.seed_hosts=es02,es03
-      - cluster.initial_master_nodes=es01,es02,es03
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    volumes:
-      - /elasticsearch/data01:/usr/share/elasticsearch/data
-    ports:
-      - 9200:9200
-    networks:
-      - elastic
+      - nestjs-api
  
 networks:
-  postgres:
-    driver: bridge
-  elastic:
+  nestjs-api:
     driver: bridge
     
