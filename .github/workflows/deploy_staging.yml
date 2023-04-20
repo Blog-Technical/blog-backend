@@ -51,4 +51,4 @@ jobs:
 
       - name: Update ECS service
         run: |
-          aws ecs update-service --cluster blog_api_cluster --service blog_api_service --task-definition blog_api_task --force-new-deployment
+          aws ecs update-service --cluster blog_api_cluster --service blog_api_service --task-definition blog_api_task:3 --force-new-deployment
