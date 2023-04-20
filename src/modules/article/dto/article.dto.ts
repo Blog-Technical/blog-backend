@@ -1,10 +1,13 @@
+import { Type } from 'class-transformer';
 import {
   IsString,
   IsNotEmpty,
-  IsNumber,
   IsOptional,
+  IsArray,
+  IsInt,
   IsEnum,
 } from 'class-validator';
+import { SortOptionEnum } from 'src/configs/constants/common';
 
 export class CreateArticleDTO {
   @IsString()
@@ -12,7 +15,24 @@ export class CreateArticleDTO {
   title: string;
 
   @IsString()
+  @IsNotEmpty()
+  description: string;
+
+  @IsString()
+  @IsNotEmpty()
+  image: string;
+
+  @IsString()
+  @IsNotEmpty()
   content: string;
+
+  @IsString()
+  @IsNotEmpty()
+  visibility: string;
+
+  @IsArray()
+  @IsNotEmpty()
+  topics: number[];
 }
 
 export class UpdateArticleDTO {
@@ -22,7 +42,7 @@ export class UpdateArticleDTO {
 
   @IsString()
   @IsOptional()
-  content: string;
+  description: string;
 }
 
 export class SearchArticleDTO {
@@ -30,29 +50,39 @@ export class SearchArticleDTO {
   @IsOptional()
   textSearch: string;
 
-  @IsString()
+  @IsInt()
+  @Type(() => Number)
   @IsOptional()
-  page: string;
+  page: number;
+
+  @IsInt()
+  @Type(() => Number)
+  @IsOptional()
+  perPage: number;
+
+  @IsArray()
+  @IsOptional()
+  topicUrls: string[];
 
   @IsString()
   @IsOptional()
-  perPage: string;
-
-  @IsString()
-  @IsOptional()
-  sortByDate: 'asc' | 'desc';
+  @IsEnum(SortOptionEnum)
+  sortByDate: 'ASC' | 'DESC';
 }
 
 export class GetListArticleDTO {
-  @IsString()
+  @IsInt()
+  @Type(() => Number)
   @IsOptional()
-  page: string;
+  page: number;
+
+  @IsInt()
+  @Type(() => Number)
+  @IsOptional()
+  perPage: number;
 
   @IsString()
   @IsOptional()
-  perPage: string;
-
-  @IsString()
-  @IsOptional()
-  sortByDate: 'asc' | 'desc';
+  @IsEnum(SortOptionEnum)
+  sortByDate: 'ASC' | 'DESC';
 }

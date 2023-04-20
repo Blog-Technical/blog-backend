@@ -1,4 +1,4 @@
-export const calculatePaginate = (page: string, perPage: string) => {
+export const calculatePaginate = (page: number, perPage: number) => {
   let limit = Number(perPage),
     currentPage = Number(page),
     skip = 0;
