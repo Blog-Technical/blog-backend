@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { ApiParam, ApiTags, ApiBody, ApiQuery } from '@nestjs/swagger';
 import JwtAuthGuard from '../auth/guard/jwtAuth.guard';
+import { SortOptionEnum } from '../../configs/constants/common';
 
 // Service
 import { ArticleService } from './article.service';
@@ -19,44 +20,75 @@ import { ArticleService } from './article.service';
 // DTO
 import {
   CreateArticleDTO,
-  GetListArticleDTO,
   SearchArticleDTO,
+  SearchArticleForAdminDTO,
   UpdateArticleDTO,
 } from './dto';
+import { Visibility } from '../../entities';
 
 @Controller('article')
 @ApiTags('Article')
 export class ArticleController {
   constructor(private readonly articleService: ArticleService) {}
 
-  @Get('search')
-  @ApiQuery({ name: 'textSearch' })
-  @ApiQuery({ name: 'page' })
-  @ApiQuery({ name: 'perPage' })
-  @ApiQuery({ name: 'sortByDate', enum: ['asc', 'desc'] })
-  async searchArticle(@Query() query: SearchArticleDTO) {
-    return this.articleService.searchForArticle(query);
-  }
-
-  @Get()
-  @ApiQuery({ name: 'page' })
-  @ApiQuery({ name: 'perPage' })
-  @ApiQuery({ name: 'sortByDate', enum: ['asc', 'desc'] })
-  async getArticles(@Query() query: GetListArticleDTO) {
+  @Get('/articles')
+  @ApiQuery({ name: 'textSearch', required: false, type: String })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'perPage', required: false, type: Number })
+  @ApiQuery({ name: 'topicUrls', required: false, type: [String] })
+  @ApiQuery({ name: 'sortByDate', required: false, enum: SortOptionEnum })
+  async getArticles(@Query() query: SearchArticleDTO) {
     return this.articleService.getArticles(query);
   }
 
+  @Get('/articles/:articleUrl')
+  @ApiParam({
+    name: 'articleUrl',
+    required: true,
+    type: String,
+  })
+  async getArticleByUrl(
+    @Req() request,
+    @Param('articleUrl') articleUrl: string,
+  ) {
+    return this.articleService.getArticleByUrl(articleUrl);
+  }
+
+  @Post('/admin/articles')
   @UseGuards(JwtAuthGuard)
-  @Post()
   @ApiBody({ type: CreateArticleDTO })
   async createArticle(@Req() request, @Body() data: CreateArticleDTO) {
-    console.log(data);
     const { user } = request;
     return this.articleService.createArticle(data, user);
   }
 
+  @Get('/admin/articles')
   @UseGuards(JwtAuthGuard)
-  @Patch('/:articleId')
+  @ApiQuery({ name: 'textSearch', required: false, type: String })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'perPage', required: false, type: Number })
+  @ApiQuery({ name: 'topicUrls', required: false, type: [String] })
+  @ApiQuery({ name: 'deleteSoft', required: false, type: Boolean })
+  @ApiQuery({
+    name: 'sortByDate',
+    required: false,
+    enum: SortOptionEnum,
+    type: String,
+  })
+  @ApiQuery({
+    name: 'visibilities',
+    required: false,
+    type: [String],
+    enum: Visibility,
+    isArray: true,
+  })
+  async getArticlesWithRoleAdmin(@Query() query: SearchArticleForAdminDTO) {
+    console.log(query);
+    return this.articleService.getArticlesForAdmin(query);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('/admin/articles/:articleId')
   @ApiParam({
     name: 'articleId',
     required: true,
@@ -73,7 +105,7 @@ export class ArticleController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Delete('/:articleId')
+  @Delete('/admin/articles/:articleId')
   @ApiParam({
     name: 'articleId',
     required: true,

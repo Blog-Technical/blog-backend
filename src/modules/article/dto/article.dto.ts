@@ -6,8 +6,10 @@ import {
   IsArray,
   IsInt,
   IsEnum,
+  IsBoolean,
 } from 'class-validator';
 import { SortOptionEnum } from 'src/configs/constants/common';
+import { Visibility } from 'src/entities';
 
 export class CreateArticleDTO {
   @IsString()
@@ -69,8 +71,11 @@ export class SearchArticleDTO {
   @IsEnum(SortOptionEnum)
   sortByDate: 'ASC' | 'DESC';
 }
+export class SearchArticleForAdminDTO {
+  @IsString()
+  @IsOptional()
+  textSearch: string;
 
-export class GetListArticleDTO {
   @IsInt()
   @Type(() => Number)
   @IsOptional()
@@ -81,8 +86,22 @@ export class GetListArticleDTO {
   @IsOptional()
   perPage: number;
 
+  @IsArray()
+  @IsOptional()
+  topicUrls: string[];
+
   @IsString()
   @IsOptional()
   @IsEnum(SortOptionEnum)
   sortByDate: 'ASC' | 'DESC';
+
+  @IsBoolean()
+  @Type(() => Boolean)
+  @IsOptional()
+  deleteSoft: boolean;
+
+  @IsArray()
+  @IsOptional()
+  @IsEnum(Visibility, { each: true })
+  visibilities: string[];
 }

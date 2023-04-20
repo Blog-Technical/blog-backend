@@ -14,6 +14,7 @@ import { TopicService } from './topic.service';
 import { ApiBody, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { CreateTopicDTO, SearchTopicDTO, UpdateTopicDTO } from './dto';
 import JwtAuthGuard from '../auth/guard/jwtAuth.guard';
+import { SortOptionEnum } from '../../configs/constants/common';
 
 @Controller('topic')
 @ApiTags('Topic')
@@ -21,10 +22,15 @@ export class TopicController {
   constructor(private readonly topicService: TopicService) {}
 
   @Get('/topics')
-  @ApiQuery({ name: 'page' })
-  @ApiQuery({ name: 'perPage' })
-  @ApiQuery({ name: 'topicIds', type: [Number] })
-  @ApiQuery({ name: 'sortByPriority', enum: ['ASC', 'DESC'] })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'perPage', required: false, type: Number })
+  @ApiQuery({ name: 'topicIds', required: false, type: [Number] })
+  @ApiQuery({
+    name: 'sortByPriority',
+    enum: SortOptionEnum,
+    required: false,
+    type: String,
+  })
   async getTopics(@Query() query: SearchTopicDTO) {
     return this.topicService.getTopics(query);
   }
