@@ -1,10 +1,15 @@
+import { Type } from 'class-transformer';
 import {
   IsString,
   IsNotEmpty,
-  IsNumber,
   IsOptional,
+  IsArray,
+  IsInt,
   IsEnum,
+  IsBoolean,
 } from 'class-validator';
+import { SortOptionEnum } from 'src/configs/constants/common';
+import { Visibility } from 'src/entities';
 
 export class CreateArticleDTO {
   @IsString()
@@ -12,7 +17,24 @@ export class CreateArticleDTO {
   title: string;
 
   @IsString()
+  @IsNotEmpty()
+  description: string;
+
+  @IsString()
+  @IsNotEmpty()
+  image: string;
+
+  @IsString()
+  @IsNotEmpty()
   content: string;
+
+  @IsString()
+  @IsNotEmpty()
+  visibility: string;
+
+  @IsArray()
+  @IsNotEmpty()
+  topics: number[];
 }
 
 export class UpdateArticleDTO {
@@ -22,7 +44,7 @@ export class UpdateArticleDTO {
 
   @IsString()
   @IsOptional()
-  content: string;
+  description: string;
 }
 
 export class SearchArticleDTO {
@@ -30,29 +52,56 @@ export class SearchArticleDTO {
   @IsOptional()
   textSearch: string;
 
-  @IsString()
+  @IsInt()
+  @Type(() => Number)
   @IsOptional()
-  page: string;
+  page: number;
+
+  @IsInt()
+  @Type(() => Number)
+  @IsOptional()
+  perPage: number;
+
+  @IsArray()
+  @IsOptional()
+  topicUrls: string[];
 
   @IsString()
   @IsOptional()
-  perPage: string;
-
-  @IsString()
-  @IsOptional()
-  sortByDate: 'asc' | 'desc';
+  @IsEnum(SortOptionEnum)
+  sortByDate: 'ASC' | 'DESC';
 }
-
-export class GetListArticleDTO {
+export class SearchArticleForAdminDTO {
   @IsString()
   @IsOptional()
-  page: string;
+  textSearch: string;
+
+  @IsInt()
+  @Type(() => Number)
+  @IsOptional()
+  page: number;
+
+  @IsInt()
+  @Type(() => Number)
+  @IsOptional()
+  perPage: number;
+
+  @IsArray()
+  @IsOptional()
+  topicUrls: string[];
 
   @IsString()
   @IsOptional()
-  perPage: string;
+  @IsEnum(SortOptionEnum)
+  sortByDate: 'ASC' | 'DESC';
 
-  @IsString()
+  @IsBoolean()
+  @Type(() => Boolean)
   @IsOptional()
-  sortByDate: 'asc' | 'desc';
+  deleteSoft: boolean;
+
+  @IsArray()
+  @IsOptional()
+  @IsEnum(Visibility, { each: true })
+  visibilities: string[];
 }

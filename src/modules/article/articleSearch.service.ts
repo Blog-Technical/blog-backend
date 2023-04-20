@@ -13,58 +13,67 @@ export class ArticleSearchService {
   constructor(private readonly elasticsearchService: ElasticsearchService) {}
 
   async indexArticle(article: Article) {
-    return this.elasticsearchService.index<ArticleSearchBody>({
-      index: this.index,
-      body: {
-        id: article.id,
-        title: article.title,
-        content: article.content,
-        createdAt: article.createdAt,
-      },
-    });
+    return this.elasticsearchService
+      .index<ArticleSearchBody>({
+        index: this.index,
+        body: {
+          id: article.id,
+          title: article.title,
+          description: article.description,
+          createdAt: article.createdAt,
+        },
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   }
 
   async search(searchQuery: SearchArticleDTO) {
-    const { textSearch, page, perPage, sortByDate } = searchQuery;
-    const { limit, skip } = calculatePaginate(page, perPage);
-    const bodyQuery = {};
+    try {
+      const { textSearch, page, perPage, sortByDate } = searchQuery;
+      const { limit, skip } = calculatePaginate(page, perPage);
+      const bodyQuery = {};
 
-    if (textSearch) {
-      bodyQuery['query'] = {
-        multi_match: {
-          query: textSearch,
-          fields: ['title', 'content'],
-        },
-      };
+      if (textSearch) {
+        bodyQuery['query'] = {
+          multi_match: {
+            query: textSearch,
+            fields: ['title', 'description'],
+          },
+        };
+      }
+      bodyQuery['sort'] = [{ createdAt: { order: sortByDate ?? 'ASC' } }];
+
+      const data = await this.elasticsearchService.search<ArticleSearchBody>({
+        index: this.index,
+        size: limit,
+        from: skip,
+        body: bodyQuery,
+      });
+
+      const hits = data.hits.hits;
+      const results = hits.map((item) => item._source);
+
+      return results;
+    } catch (error) {
+      console.error(error);
     }
-    bodyQuery['sort'] = [{ createdAt: { order: sortByDate ?? 'asc' } }];
-    const searchOptions: SearchRequest = {
-      index: this.index,
-      size: limit,
-      from: skip,
-      body: bodyQuery,
-    };
-
-    const data = await this.elasticsearchService.search<ArticleSearchBody>(
-      searchOptions,
-    );
-
-    const hits = data.hits.hits;
-    const results = hits.map((item) => item._source);
-
-    return results;
   }
 
   async remove(articleId: number) {
-    this.elasticsearchService.deleteByQuery({
-      index: this.index,
-      body: {
-        query: {
-          match: {
-            id: articleId,
+    this.elasticsearchService
+      .deleteByQuery({
+        index: this.index,
+        body: {
+          query: {
+            match: {
+              id: articleId,
+            },
           },
         },
-      },
-    });
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   }
 }
