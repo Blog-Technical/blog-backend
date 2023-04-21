@@ -1,9 +1,10 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Logger } from '@nestjs/common';
 import { AppService } from './app.service';
 import { HealthCheckService, HealthCheck } from '@nestjs/terminus';
 
 @Controller()
 export class AppController {
+  private readonly logger = new Logger(AppController.name);
   constructor(
     private readonly appService: AppService,
     private health: HealthCheckService,
@@ -16,7 +17,10 @@ export class AppController {
 
   @Get('health')
   @HealthCheck()
-  getHealth() {
-    return this.health.check([]);
+  async getHealth() {
+    const health = await this.health.check([]);
+
+    this.logger.log(health.status);
+    return health;
   }
 }
