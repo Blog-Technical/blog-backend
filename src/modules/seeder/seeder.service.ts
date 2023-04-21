@@ -4,17 +4,15 @@ import { Repository } from 'typeorm';
 import { faker } from '@faker-js/faker';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const bcrypt = require('bcrypt');
-import * as MarkdownIt from 'markdown-it';
 
 // Entity
 import { Role, User, Article, Topic } from '../../entities';
 import { ArticleSearchService } from '../article/articleSearch.service';
 import slugify from 'slugify';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class SeederService {
-  private readonly md: MarkdownIt;
-
   constructor(
     private readonly logger: Logger,
 
@@ -31,14 +29,18 @@ export class SeederService {
     private topicRepo: Repository<Topic>,
 
     private articleSearchService: ArticleSearchService,
-  ) {
-    this.md = new MarkdownIt();
-  }
+
+    private configService: ConfigService,
+  ) {}
 
   async seed() {
-    await this.clearDatabase();
-    const users = await this.seedUsers();
-    await this.seedArticles(users);
+    if (this.configService.get('NODE_ENV') === 'production') {
+      await this.seedAdmin();
+    } else {
+      await this.clearDatabase();
+      const users = await this.seedUsers();
+      await this.seedArticles(users);
+    }
   }
 
   async clearDatabase() {
@@ -55,6 +57,34 @@ export class SeederService {
     const deleteUser = this.userRepo.delete({});
 
     await Promise.all([deleteRole, deleteUser]);
+  }
+
+  async seedAdmin() {
+    try {
+      // Create new role
+      const roleAdmin = new Role();
+      roleAdmin.name = 'admin';
+      await this.roleRepo.save(roleAdmin);
+      this.logger.debug('Successfuly completed seeding roles...');
+
+      // Create new user
+      const email = this.configService.get('ADMIN_EMAIL');
+      const password = this.configService.get('ADMIN_PASSWORD');
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const user = new User();
+
+      user.name = 'Admin';
+      user.email = email;
+      user.roles = [roleAdmin];
+      user.password = hashedPassword;
+
+      await this.userRepo.save(user);
+
+      this.logger.debug('Successfuly completed seeding users...');
+    } catch (error) {
+      console.log(error);
+      this.logger.error('Failed seeding users...');
+    }
   }
 
   async seedUsers(): Promise<User[]> {
