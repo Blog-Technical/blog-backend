@@ -7,12 +7,6 @@ Features done:
 - CRUD article
 - Text search by ElasticSearch
 
-Some problems in coding have not been resolved:
-
-- Build pagination decorators for API
-- Write unit test
-- Dockerize
-
 Swaggers: /api
 
 ## Installation
